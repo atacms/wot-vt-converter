@@ -1,6 +1,7 @@
 # created by atacms, 11/02/2018
 # output vt format as observed in WoT CT 0.9.23.0
 # tested with obj created by 3dsmax2012, model facing front, with 'flip YZ-axis' option
+# sometimes the model needs to be rotated 180 facing scene rear. it probably depends on how tank chssis is built.
 
 import pdb
 #import subprocess
