@@ -1,6 +1,7 @@
 # wot-vt-converter
 convert 3dsmax2012-generated obj format into WorldofTanks vt file, or extract bsp from legacy BigWorld primitives file.
 
+
 *obj2vt.py is recommended, it generates a more compact vt file.
 *p2vt.py will extract bsp from primitives created by 3dsmax bigworld model exporter plugin, if there is a bsp section in it. However because the way bsp is stored, all shared verts are split for each adjacent faces, causing massive duplicates.
 
