@@ -9,3 +9,4 @@ del *.imped
 del *.bak
 del *.xml
 del *.vt
+del *.fixed

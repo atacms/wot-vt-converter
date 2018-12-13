@@ -1,5 +1,5 @@
-# created by atacms, 11/02/2018
-# output vt format as observed in WoT CT 0.9.23.0
+# created by atacms, 13/12/2018
+# output vt format as observed in WoT 1.3.0.1
 # tested with obj created by 3dsmax2012, model facing front, with 'flip YZ-axis' option
 # sometimes the model needs to be rotated 180 facing scene rear. it probably depends on how tank chssis is built.
 
@@ -90,7 +90,7 @@ def main(filename_obj):
 		print (maxx, maxy, maxz)
 			
 		with open(filename_vt, 'wb') as vtFP:
-				vtFP.write('\x0b\xb0\x0b\xb0\x01\x00\x00\x00')
+				vtFP.write('\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
 				vtFP.write(pack('f',minx))
 				vtFP.write(pack('f',miny))
 				vtFP.write(pack('f',minz))
@@ -114,6 +114,11 @@ def main(filename_obj):
 					vtFP.write('\x02')
 					for ele in indicies:
 						vtFP.write(pack('I',ele))
+				vtFP.write('\x01\x00\x00\x00\x00\x00\x00\x00')
+				vtFP.write(pack('I',v_count))
+				vtFP.close()
+				print 'Done'
+				
 				
 
 		

@@ -1,0 +1,1 @@
+python fixvt.py *.vt

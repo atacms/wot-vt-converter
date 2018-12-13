@@ -1,2 +1,1 @@
-python convert-primitive.py *.primitives_processed
-python convert-primitive.py *.primitives
+python obj2vt.py *.obj
