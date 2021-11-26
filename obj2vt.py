@@ -34,7 +34,7 @@ def main(filename_obj):
 			print("Failed to find %s" % filename_obj)
 			sys.exit(1)
 
-	with open(filename_obj, 'rb') as mainFP:
+	with open(filename_obj, 'r') as mainFP:
 		isProcessed = False
 		vertices = []
 		indicies = []
@@ -45,7 +45,8 @@ def main(filename_obj):
 		maxy=0
 		maxz=0
 		while True:
-			line = mainFP.readline().decode('utf-8')
+#			line = mainFP.readline().decode('utf-8')
+			line = mainFP.readline()
 			if line=='':
 				break
 			if line.startswith('#'):
@@ -69,7 +70,8 @@ def main(filename_obj):
 				if not isProcessed:
 					isProcessed = True
 					while True:
-						line = mainFP.readline().decode('utf-8')
+						line = mainFP.readline()
+#						line = mainFP.readline().decode('utf-8')
 						if line=='':
 							break
 						if line.startswith('g ') or line.startswith('vt ') or line.startswith('vn ') or line.startswith('v '):
