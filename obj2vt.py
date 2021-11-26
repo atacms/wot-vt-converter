@@ -45,7 +45,7 @@ def main(filename_obj):
 		maxy=0
 		maxz=0
 		while True:
-			line = mainFP.readline()
+			line = mainFP.readline().decode('utf-8')
 			if line=='':
 				break
 			if line.startswith('#'):
@@ -62,14 +62,14 @@ def main(filename_obj):
 				maxx = vert.x if vert.x > maxx else maxx
 				maxy = vert.y if vert.y > maxy else maxy
 				maxz = vert.z if vert.z > maxz else maxz
-#				print '(%f, %f, %f)'%(vert.x, vert.y, vert.z)
+#				print ('(%f, %f, %f)'%(vert.x, vert.y, vert.z))
 				vertices.append(vert)
 				continue
 			elif line.startswith('g '):
 				if not isProcessed:
 					isProcessed = True
 					while True:
-						line = mainFP.readline()
+						line = mainFP.readline().decode('utf-8')
 						if line=='':
 							break
 						if line.startswith('g ') or line.startswith('vt ') or line.startswith('vn ') or line.startswith('v '):
@@ -82,15 +82,15 @@ def main(filename_obj):
 								else:
 									indicies.append(int(_[i])-1)
 									
-		print 'bsp loaded into memory'
+		print ('bsp loaded into memory')
 #		print vertices
 #		print indicies
-		print 'reconstructed boundingbox:'
+		print ('reconstructed boundingbox:')
 		print (minx, miny, minz)
 		print (maxx, maxy, maxz)
 			
 		with open(filename_vt, 'wb') as vtFP:
-				vtFP.write('\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
+				vtFP.write(b'\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
 				vtFP.write(pack('f',minx))
 				vtFP.write(pack('f',miny))
 				vtFP.write(pack('f',minz))
@@ -98,7 +98,7 @@ def main(filename_obj):
 				vtFP.write(pack('f',maxy))
 				vtFP.write(pack('f',maxz))
 				v_count = len(vertices)
-				print 'v_count = %d' %v_count
+				print ('v_count = %d' %v_count)
 				vtFP.write(pack('I',v_count))
 				for v in vertices:
 					vtFP.write(pack('f',v.x))
@@ -106,18 +106,18 @@ def main(filename_obj):
 					vtFP.write(pack('f',v.z))
 				vtFP.write(pack('I',len(indicies)))
 				if len(indicies) <= 65535:
-					vtFP.write('\x01')
+					vtFP.write(b'\x01')
 					for ele in indicies:
 						vtFP.write(pack('H',ele))
 				else:
-					print 'bsp is very large. '
-					vtFP.write('\x02')
+					print ('bsp is very large. ')
+					vtFP.write(b'\x02')
 					for ele in indicies:
 						vtFP.write(pack('I',ele))
-				vtFP.write('\x01\x00\x00\x00\x00\x00\x00\x00')
+				vtFP.write(b'\x01\x00\x00\x00\x00\x00\x00\x00')
 				vtFP.write(pack('I',v_count))
 				vtFP.close()
-				print 'Done'
+				print ('Done')
 				
 				
 

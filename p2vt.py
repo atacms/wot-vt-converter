@@ -89,9 +89,9 @@ def main(filename_primitive):
 #			stride = unpack("I", mainFP.read(4))[0]		#DWORDs per face = 10. 
 			mainFP.read(8)	#the next 8 bytes might be padding
 
-			print 'faces_count = %d'%faces_count
+			print ('faces_count = %d'%faces_count)
 #			if version != 2 or stride != 10:
-#				print 'unrecognized bsp version, abort'
+#				print ('unrecognized bsp version, abort')
 #				return
 			pindex = 0
 			vertices = []
@@ -118,15 +118,15 @@ def main(filename_primitive):
 					maxy = vert.y if vert.y > maxy else maxy
 					maxz = vert.z if vert.z > maxz else maxz
 				mainFP.read(4)
-			print 'bsp loaded into memory'
+			print ('bsp loaded into memory')
 #			print vertices
 #			print indicies
-			print 'reconstructed boundingbox:'
+			print ('reconstructed boundingbox:')
 			print (minx, miny, minz)
 			print (maxx, maxy, maxz)
 			
 			with open(filename_vt, 'wb') as vtFP:
-				vtFP.write('\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
+				vtFP.write(b'\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
 				vtFP.write(pack('f',minx))
 				vtFP.write(pack('f',miny))
 				vtFP.write(pack('f',minz))
@@ -134,7 +134,7 @@ def main(filename_primitive):
 				vtFP.write(pack('f',maxy))
 				vtFP.write(pack('f',maxz))
 				v_count = len(vertices)
-				print 'v_count = %d' %v_count
+				print ('v_count = %d' %v_count)
 				vtFP.write(pack('I',v_count))
 				for v in vertices:
 					vtFP.write(pack('f',v.x))
@@ -142,24 +142,24 @@ def main(filename_primitive):
 					vtFP.write(pack('f',v.z))
 				vtFP.write(pack('I',len(indicies)))
 				if len(indicies) <= 65535:
-					vtFP.write('\x01')
+					vtFP.write(b'\x01')
 					for ele in indicies:
 						vtFP.write(pack('H',ele))
 				else:
-					print 'FYI: extracted bsp is very large. obj-to-vt conversion recommended'
-					vtFP.write('\x02')
+					print ('FYI: extracted bsp is very large. obj-to-vt conversion recommended')
+					vtFP.write(b'\x02')
 					for ele in indicies:
 						vtFP.write(pack('I',ele))
-				vtFP.write('\x01\x00\x00\x00\x00\x00\x00\x00')
+				vtFP.write(b'\x01\x00\x00\x00\x00\x00\x00\x00')
 				vtFP.write(pack('I',v_count))
 				vtFP.close()
-				print 'Done'
+				print ('Done')
 				
 						
 			
 				
 		else:
-			print 'bsp not found or incompatible bsp version, skip.'
+			print ('bsp not found or incompatible bsp version, skip.')
 
 
 		
