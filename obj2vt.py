@@ -1,7 +1,12 @@
-# created by atacms, 13/12/2018
+# created by atacms, 10/06/2024
 # output vt format as observed in WoT 1.3.0.1
-# tested with obj created by 3dsmax2012, model facing front, with 'flip YZ-axis' option
-# sometimes the model needs to be rotated 180 facing scene rear. it probably depends on how tank chssis is built.
+#       vt is sensitive to triangle facing direction. Because there's no easy way to determin whether the provided has correct facing,
+#       an alternative vt with inverted facing is created as XXX_2.vt
+# input obj requirement: 
+#       1. only the 1st object/group is allowed. 2nd entity onward is ignored. 
+#       2. tested with obj created by 3dsmax2012, model facing scene back, with 'flip YZ-axis' option
+#       3. tested with obj created by blender 4.1.1
+# sometimes the model needs to be rotated 180 facing scene front. it probably depends on how tank chssis is built.
 
 import pdb
 #import subprocess
@@ -28,22 +33,28 @@ parser.add_argument('-o','--output', dest='vt', help='result vt filename')
 def main(filename_obj):
 	filename = os.path.splitext(filename_obj)[0]
 	filename_vt = '%s.vt' %filename
+	filename_vt2 = '%s_2.vt' %filename
 	if args.vt != None:
 			filename_vt = args.vt
+			filename_vt2 = filename_vt.split('.')[0]+'_2.vt'
 	if not os.path.exists(filename_obj):
 			print("Failed to find %s" % filename_obj)
 			sys.exit(1)
 
 	with open(filename_obj, 'r') as mainFP:
-		isProcessed = False
+		isProcessed = False		#only one object/group is allowed. after one object/group is processed, mark this flag to prevent further reading of objects
 		vertices = []
 		indicies = []
+		indicies2 = []	#store indicies in reversed order, found in model with inverted topological normal(facing)
 		minx=0
 		miny=0
 		minz=0
 		maxx=0
 		maxy=0
 		maxz=0
+		#vt structures needs v position data in the front. while 3dsmax does put V in front of o/g/f, blender does not.
+		#so original implementation of obj reading had to break down into multiple passes
+		#1st pass, read ONLY "v x y z" data
 		while True:
 #			line = mainFP.readline().decode('utf-8')
 			line = mainFP.readline()
@@ -66,24 +77,47 @@ def main(filename_obj):
 #				print ('(%f, %f, %f)'%(vert.x, vert.y, vert.z))
 				vertices.append(vert)
 				continue
-			elif line.startswith('g '):
+
+			#2nd pass
+		mainFP.seek(0)
+		while True:
+			line = mainFP.readline()
+			if line=='':
+				break
+			if line.startswith('g ') or line.startswith('o '):
 				if not isProcessed:
 					isProcessed = True
+					tmpFlag = True
 					while True:
 						line = mainFP.readline()
 #						line = mainFP.readline().decode('utf-8')
-						if line=='':
+						if line =='':
 							break
-						if line.startswith('g ') or line.startswith('vt ') or line.startswith('vn ') or line.startswith('v '):
+						if line.startswith('g ') or line.startswith('o '):	#found another object. multiple object is not supported, end current object creation.
 							break
 						elif line.startswith('f '):
 							_ = line.split()[1::]
+							fmpFlag = True
 							for i in [0,2,1]:
 								if '/' in _[i]:
 									indicies.append(int(_[i].split('/')[0])-1)
 								else:
 									indicies.append(int(_[i])-1)
-									
+							# store inverted indicies in another structure
+							for i in [0,1,2]:
+								if '/' in _[i]:
+									indicies2.append(int(_[i].split('/')[0])-1)
+								else:
+									indicies2.append(int(_[i])-1)
+							if tmpFlag:
+#								print('tag2')
+#								print(indicies)
+#								print(indicies2)
+								tmpFlag = False
+						else:
+							continue
+			else:
+				continue									
 		print ('bsp loaded into memory')
 #		print vertices
 #		print indicies
@@ -92,6 +126,7 @@ def main(filename_obj):
 		print (maxx, maxy, maxz)
 			
 		with open(filename_vt, 'wb') as vtFP:
+				vtFP2 = open(filename_vt2, 'wb')
 				vtFP.write(b'\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
 				vtFP.write(pack('f',minx))
 				vtFP.write(pack('f',miny))
@@ -102,24 +137,55 @@ def main(filename_obj):
 				v_count = len(vertices)
 				print ('v_count = %d' %v_count)
 				vtFP.write(pack('I',v_count))
+				if vtFP2:
+					vtFP2.write(b'\x0b\xb0\x0b\xb0\x02\x00\x00\x00')
+					vtFP2.write(pack('f',minx))
+					vtFP2.write(pack('f',miny))
+					vtFP2.write(pack('f',minz))
+					vtFP2.write(pack('f',maxx))
+					vtFP2.write(pack('f',maxy))
+					vtFP2.write(pack('f',maxz))
+					vtFP2.write(pack('I',v_count))
 				for v in vertices:
 					vtFP.write(pack('f',v.x))
 					vtFP.write(pack('f',v.y))
 					vtFP.write(pack('f',v.z))
+					if vtFP2:
+						vtFP2.write(pack('f',v.x))
+						vtFP2.write(pack('f',v.y))
+						vtFP2.write(pack('f',v.z))
 				vtFP.write(pack('I',len(indicies)))
+				if vtFP2:
+					vtFP2.write(pack('I',len(indicies2)))
 				if len(indicies) <= 65535:
 					vtFP.write(b'\x01')
+					if vtFP2:
+						vtFP2.write(b'\x01')
 					for ele in indicies:
 						vtFP.write(pack('H',ele))
+					if vtFP2:
+						for ele in indicies2:
+							vtFP2.write(pack('H',ele))
 				else:
 					print ('bsp is very large. ')
 					vtFP.write(b'\x02')
+					if vtFP2:
+						vtFP2.write(b'\x02')
 					for ele in indicies:
 						vtFP.write(pack('I',ele))
+					if vtFP2:
+						for ele in indicies2:
+							vtFP2.write(pack('I',ele))
 				vtFP.write(b'\x01\x00\x00\x00\x00\x00\x00\x00')
 				vtFP.write(pack('I',v_count))
 				vtFP.close()
-				print ('Done')
+				print('vt generated as %s.'%filename_vt)
+				if vtFP2:
+					vtFP2.write(b'\x01\x00\x00\x00\x00\x00\x00\x00')
+					vtFP2.write(pack('I',v_count))
+					vtFP2.close()
+					print("alternative vt generated as %s "%filename_vt2)
+#				input("Press Enter to continue...")
 				
 				
 
