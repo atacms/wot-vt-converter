@@ -1,9 +1,11 @@
 # wot-vt-converter
-convert 3dsmax2012 or blender generated obj format into WorldofTanks vt file, or extract bsp from legacy BigWorld primitives file.
+Convert 3dsmax2012 or blender v3.6 generated obj format into WorldofTanks vt file, or extract bsp from legacy BigWorld primitives file.
 
-aside from generating xxx.vt, it will also generated xxx_2.vt with inverted facing, so that input model with wrong triangle facing can also be used.
+Tested under 3dsmax2012 and blender v3.6. Obj files created by different version or different software is possible but not guaranteed. 
 
-the source of these defective models are not verified, but most likely created by tankExporter, WoT plugin for Blender, or both.
+Aside from generating xxx.vt, it will also generated xxx_2.vt with inverted facing, so that input model with wrong triangle facing can also be used.
+
+The source of these defective models are not verified, but most likely created by tankExporter, WoT plugin for Blender, or both.
 
 python 2.7~3.8 script
 
